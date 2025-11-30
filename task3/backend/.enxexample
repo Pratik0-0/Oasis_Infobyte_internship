@@ -1,0 +1,2 @@
+DB_ADD = mongodb+srv://USER:PASS
+JWT__SECRET = YOUR_SECRET
