@@ -15,12 +15,13 @@ app.use(exp.json());
 const en = require('dotenv');
 en.config();
 const DB_ADD = process.env.DB_ADD;
+const JWT__SECRET = process.env.JWT__SECRET;
 console.log(process.env.DB_ADD);
 
 
 const jwt = require('jsonwebtoken');
 //const { use } = require('react');
-const secret = 'youareawesome';
+const secret = JWT__SECRET;
 
 
 //conececting to the database
