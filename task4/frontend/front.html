@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #66cbea 0%, #4b7fa2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .auth-container, .todo-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        h1, h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #112374;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background: #081141;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-logout {
+            background: #4e35dc;
+            float: right;
+        }
+
+        .btn-logout:hover {
+            background: #a123c8;
+        }
+
+        .error {
+            color: #dc3545;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .success {
+            color: #28a745;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .todo-input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .todo-input-container input {
+            flex: 1;
+        }
+
+        .todo-lists {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .todo-list {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .todo-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .todo-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .todo-text {
+            flex: 1;
+            color: #333;
+        }
+
+        .completed .todo-text {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .todo-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-complete, .btn-uncomplete {
+            padding: 6px 12px;
+            font-size: 12px;
+            background: #28a745;
+        }
+
+        .btn-complete:hover, .btn-uncomplete:hover {
+            background: #218838;
+        }
+
+        .btn-uncomplete {
+            background: #ffc107;
+        }
+
+        .btn-uncomplete:hover {
+            background: #e0a800;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .todo-lists {
+                grid-template-columns: 1fr;
+            }
+
+            .todo-input-container {
+                flex-direction: column;
+            }
+
+            .btn-logout {
+                float: none;
+                display: block;
+                width: 100%;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Authentication Container -->
+        <div id="authContainer" class="auth-container">
+            <h1>Todo App</h1>
+            
+            <div id="loginForm">
+                <h2>Login</h2>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="loginUsername" placeholder="Enter username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter password">
+                </div>
+                <button onclick="login()">Login</button>
+                <button class="btn-secondary" onclick="showSignup()">Sign Up</button>
+                <div id="loginError" class="error"></div>
+            </div>
+
+            <div id="signupForm" class="hidden">
+                <h2>Sign Up</h2>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="signupUsername" placeholder="Enter username (min 3 chars)">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="signupEmail" placeholder="Enter email">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signupPassword" placeholder="Enter password (min 5 chars)">
+                </div>
+                <button onclick="signup()">Sign Up</button>
+                <button class="btn-secondary" onclick="showLogin()">Back to Login</button>
+                <div id="signupError" class="error"></div>
+                <div id="signupSuccess" class="success"></div>
+            </div>
+        </div>
+
+        <!-- Todo Container -->
+        <div id="todoContainer" class="todo-container hidden">
+            <h1>My Todos
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </h1>
+            
+            <div class="todo-input-container">
+                <input type="text" id="todoInput" placeholder="Enter a new todo...">
+                <button onclick="addTodo()">Add Todo</button>
+            </div>
+
+            <div class="todo-lists">
+                <div class="todo-list">
+                    <h2>Pending Tasks</h2>
+                    <div id="pendingTodos"></div>
+                </div>
+                <div class="todo-list">
+                    <h2>Completed Tasks</h2>
+                    <div id="completedTodos"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+        let authToken = null;
+
+        // Check if user is already logged in
+        window.onload = function() {
+            authToken = localStorage.getItem('token');
+            if (authToken) {
+                showTodoApp();
+            }
+        };
+
+        function showLogin() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('signupForm').classList.add('hidden');
+            clearMessages();
+        }
+
+        function showSignup() {
+            document.getElementById('signupForm').classList.remove('hidden');
+            document.getElementById('loginForm').classList.add('hidden');
+            clearMessages();
+        }
+
+        function clearMessages() {
+            document.getElementById('loginError').textContent = '';
+            document.getElementById('signupError').textContent = '';
+            document.getElementById('signupSuccess').textContent = '';
+        }
+
+        async function signup() {
+            const username = document.getElementById('signupUsername').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/singup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('signupSuccess').textContent = 'Signup successful! Please login.';
+                    document.getElementById('signupError').textContent = '';
+                    setTimeout(showLogin, 2000);
+                } else {
+                    document.getElementById('signupError').textContent = data.message || 'Signup failed';
+                }
+            } catch (error) {
+                document.getElementById('signupError').textContent = 'Error connecting to server';
+            }
+        }
+
+        async function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    authToken = data.token;
+                    localStorage.setItem('token', authToken);
+                    showTodoApp();
+                } else {
+                    document.getElementById('loginError').textContent = 'Invalid credentials';
+                }
+            } catch (error) {
+                document.getElementById('loginError').textContent = 'Error connecting to server';
+            }
+        }
+
+        function logout() {
+            authToken = null;
+            localStorage.removeItem('token');
+            document.getElementById('authContainer').classList.remove('hidden');
+            document.getElementById('todoContainer').classList.add('hidden');
+            showLogin();
+        }
+
+        function showTodoApp() {
+            document.getElementById('authContainer').classList.add('hidden');
+            document.getElementById('todoContainer').classList.remove('hidden');
+            loadTodos();
+        }
+
+        async function addTodo() {
+            const title = document.getElementById('todoInput').value.trim();
+            
+            if (!title) return;
+
+            try {
+                const response = await fetch(`${API_URL}/todo`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'token': authToken
+                    },
+                    body: JSON.stringify({ title, done: false })
+                });
+
+                if (response.ok) {
+                    document.getElementById('todoInput').value = '';
+                    loadTodos();
+                }
+            } catch (error) {
+                console.error('Error adding todo:', error);
+            }
+        }
+
+        async function loadTodos() {
+            try {
+                const response = await fetch(`${API_URL}/todos`, {
+                    headers: { 'token': authToken }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayTodos(data.todos);
+                }
+            } catch (error) {
+                console.error('Error loading todos:', error);
+            }
+        }
+
+        function displayTodos(todos) {
+            const pendingContainer = document.getElementById('pendingTodos');
+            const completedContainer = document.getElementById('completedTodos');
+            
+            pendingContainer.innerHTML = '';
+            completedContainer.innerHTML = '';
+
+            const pendingTodos = todos.filter(todo => !todo.done);
+            const completedTodos = todos.filter(todo => todo.done);
+
+            if (pendingTodos.length === 0) {
+                pendingContainer.innerHTML = '<div class="empty-state">No pending tasks</div>';
+            } else {
+                pendingTodos.forEach(todo => {
+                    const todoEl = createTodoElement(todo, false);
+                    pendingContainer.appendChild(todoEl);
+                });
+            }
+
+            if (completedTodos.length === 0) {
+                completedContainer.innerHTML = '<div class="empty-state">No completed tasks</div>';
+            } else {
+                completedTodos.forEach(todo => {
+                    const todoEl = createTodoElement(todo, true);
+                    completedContainer.appendChild(todoEl);
+                });
+            }
+        }
+
+        function createTodoElement(todo, isCompleted) {
+            const div = document.createElement('div');
+            div.className = 'todo-item' + (isCompleted ? ' completed' : '');
+            
+            div.innerHTML = `
+                <span class="todo-text">${todo.title}</span>
+                <div class="todo-actions">
+                    ${!isCompleted 
+                        ? `<button class="btn-complete" onclick="toggleTodo('${todo._id}', true)">Complete</button>`
+                        : `<button class="btn-uncomplete" onclick="toggleTodo('${todo._id}', false)">Undo</button>`
+                    }
+                </div>
+            `;
+            
+            return div;
+        }
+
+        async function toggleTodo(id, done) {
+            try {
+                const response = await fetch(`${API_URL}/todo/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'token': authToken
+                    },
+                    body: JSON.stringify({ done: done })
+                });
+
+                if (response.ok) {
+                    loadTodos(); // Refresh the todo list
+                } else {
+                    console.error('Error updating todo');
+                }
+            } catch (error) {
+                console.error('Error toggling todo:', error);
+            }
+        }
+
+        // Allow Enter key to submit
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (!document.getElementById('authContainer').classList.contains('hidden')) {
+                    if (!document.getElementById('loginForm').classList.contains('hidden')) {
+                        login();
+                    } else {
+                        signup();
+                    }
+                } else {
+                    addTodo();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
